@@ -1,0 +1,8 @@
+[package]
+name = "sessionizer"
+version = "0.1.0"
+authors = ["Elia Cunial"]
+edition = "2018"
+
+[dependencies]
+zellij-tile = "0.41.1"
