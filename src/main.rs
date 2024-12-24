@@ -3,25 +3,15 @@ use zellij_tile::prelude::*;
 use std::{collections::BTreeMap, path::PathBuf};
 
 #[derive(Default)]
-struct State { }
+struct State {}
 
 register_plugin!(State);
 
 impl ZellijPlugin for State {
     fn load(&mut self, _configuration: BTreeMap<String, String>) {
-        // runs once on plugin load, provides the configuration with which this plugin was loaded
-        // (if any)
-        //
-        // this is a good place to `subscribe` (https://docs.rs/zellij-tile/latest/zellij_tile/shim/fn.subscribe.html)
-        // to `Event`s (https://docs.rs/zellij-tile/latest/zellij_tile/prelude/enum.Event.html)
-        // and `request_permissions` (https://docs.rs/zellij-tile/latest/zellij_tile/shim/fn.request_permission.html)
-        let subscriptions = [EventType::SessionUpdate, EventType::ListClients];
         let permissions = [
             PermissionType::ChangeApplicationState,
-            PermissionType::RunCommands,
-            PermissionType::ReadApplicationState,
         ];
-        subscribe(&subscriptions);
         request_permission(&permissions);
     }
     fn update(&mut self, _event: Event) -> bool {
