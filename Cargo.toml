@@ -5,4 +5,5 @@ authors = ["Elia Cunial"]
 edition = "2018"
 
 [dependencies]
+nucleo-matcher = "0.3.1"
 zellij-tile = "0.41.1"
