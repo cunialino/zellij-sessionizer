@@ -69,12 +69,9 @@ prepend_keymap = [
   { on = [
     "z",
     "s",
-  ], run = "shell 'zellij_sessionizer.sh $0'", desc = "Start New session in selected dir" },
+  ], run = "shell --block 'zellij_sessionizer.sh $0'", desc = "Start New session in selected dir" },
 ]
 ```
-**Note:** the yazi command doesn't run when outside zellij, I do not know yazi enough to make it open zellij.
-
-Mostly running yazi inside of neovim with [ yazi.nvim ](https://github.com/mikavilpas/yazi.nvim)
 
 ## Final notes
 
