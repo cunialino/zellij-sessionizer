@@ -129,7 +129,9 @@ impl ZellijPlugin for State {
                     }
                 }
                 BareKey::Char('n') if key.has_modifiers(&[KeyModifier::Ctrl]) => {
-                    if self.selected_idx < self.filtered_dirs.len() {
+                    if !self.filtered_dirs.is_empty()
+                        && self.selected_idx < self.filtered_dirs.len() - 1
+                    {
                         self.selected_idx += 1;
                         should_render = true;
                     }
