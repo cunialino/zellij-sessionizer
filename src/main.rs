@@ -146,8 +146,8 @@ impl ZellijPlugin for State {
                 }
                 BareKey::Enter => {
                     let cwd = self.filtered_dirs.get(self.selected_idx).unwrap();
-                    self.create_session(cwd, None, None);
                     hide_self();
+                    self.create_session(cwd, None, None);
                 }
                 _ => (),
             },
