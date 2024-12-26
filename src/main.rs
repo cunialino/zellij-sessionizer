@@ -84,6 +84,18 @@ impl State {
             self.select_session();
         }
     }
+    fn display_ranges(&self, rows: usize) -> (usize, usize) {
+        let curr_len = self.filtered_dirs.len();
+        if curr_len == 0 {
+            (0, rows - 1)
+        } else {
+            let max_row = (self.selected_idx + self.scrolloff)
+                .min(self.filtered_dirs.len())
+                .max(rows - 1);
+            let min_row = max_row + 1 - rows;
+            (min_row, max_row)
+        }
+    }
 }
 
 register_plugin!(State);
@@ -167,10 +179,7 @@ impl ZellijPlugin for State {
             .color_range(2, 0..prompt.len())
             .color_range(3, prompt.len()..);
         print_text(text);
-        let max_row = (self.selected_idx + self.scrolloff)
-            .min(self.filtered_dirs.len())
-            .max(rows - 1);
-        let min_row = max_row + 1 - rows;
+        let (min_row, max_row) = self.display_ranges(rows);
         for (i, dir) in self.filtered_dirs.iter().enumerate() {
             if i.ge(&min_row) && i.lt(&max_row) {
                 println!();
