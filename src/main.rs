@@ -15,7 +15,6 @@ struct State {
     scrolloff: usize,
     default_dirs: Vec<String>,
     default_layout: Option<String>,
-    home_dir: String,
     find_cmd: Vec<String>,
 }
 
@@ -58,14 +57,7 @@ impl State {
     }
     fn select_session(&self) {
         let mut cmd = self.find_cmd.clone();
-        cmd.append(
-            &mut self
-                .default_dirs
-                .clone()
-                .iter()
-                .map(|d| d.replace("~", self.home_dir.as_str()))
-                .collect(),
-        );
+        cmd.append(&mut self.default_dirs.clone());
         eprintln!("SESSIONIZER: cmd {:?}", cmd);
         run_command(
             &cmd.iter().map(String::as_str).collect::<Vec<_>>(),
