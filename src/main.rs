@@ -91,7 +91,7 @@ register_plugin!(State);
 impl ZellijPlugin for State {
     fn load(&mut self, _configuration: BTreeMap<String, String>) {
         self.scrolloff = 4;
-        self.default_dirs = vec!["~/".to_string(), "~/.config/".to_string()];
+        self.default_dirs = vec![".".to_string(), ".config/".to_string()];
         self.default_layout = Some("simple".to_owned());
         self.find_cmd = vec!["fd", "-d", "1", "-t", "dir", "."]
             .into_iter()
@@ -139,52 +139,10 @@ impl ZellijPlugin for State {
                 }
                 _ => (),
             },
-            Event::RunCommandResult(exit_status, std_out, std_err, c) => {
+            Event::RunCommandResult(exit_status, std_out, std_err, _) => {
                 if exit_status == Some(0) {
-                    let name = c.get("cmd");
-                    if let Some(name) = name {
-                        if name == "find" {
-                            self.available_dirs = String::from_utf8(std_out)
-                                .unwrap()
-                                .split("\n")
-                                .map(|e| e.to_string())
-                                .collect();
-                            self.filtered_dirs = self.available_dirs.clone();
-                            should_render = true;
-                            eprintln!("SESSIONIZER: found {:?}", self.available_dirs);
-                        } else if name == "get_home" {
-                            eprintln!("SESSIONIZER: getting home");
-                            self.home_dir = String::from_utf8(std_out)
-                                .unwrap()
-                                .split("\n")
-                                .map(|e| e.to_string())
-                                .collect();
-                            eprintln!("SESSIONIZER: got home {}", self.home_dir);
-                            eprintln!("SESSIONIZER: finding stuff");
-                            if let Some(cwd) = c.get("cwd") {
-                                self.create_session(
-                                    cwd,
-                                    c.get("name").map(String::as_str),
-                                    c.get("layout").map(String::as_str),
-                                );
-                            } else {
-                                let mut cmd = self.find_cmd.clone();
-                                cmd.append(
-                                    &mut self
-                                        .default_dirs
-                                        .clone()
-                                        .iter()
-                                        .map(|d| d.replace("~", self.home_dir.as_str()))
-                                        .collect(),
-                                );
-                                eprintln!("SESSIONIZER: cmd {:?}", cmd);
-                                run_command(
-                                    &cmd.iter().map(String::as_str).collect::<Vec<_>>(),
-                                    BTreeMap::from([("cmd".to_owned(), "find".to_owned())]),
-                                );
-                            }
-                        }
-                    }
+                    self.parse_find_cmd(std_out);
+                    should_render = true;
                 } else {
                     eprintln!("SESSIONIZER: {}", String::from_utf8(std_err).unwrap());
                 }
@@ -196,43 +154,31 @@ impl ZellijPlugin for State {
     fn pipe(&mut self, pipe_message: PipeMessage) -> bool {
         let should_render = false;
         if pipe_message.name.as_str() == "sessionizer-new" {
-            let mut pwd_context = BTreeMap::from([("cmd".to_owned(), "get_home".to_owned())]);
-            if let Some(name) = pipe_message.args.get("name") {
-                pwd_context.insert("name".to_owned(), name.clone());
-            }
-            if let Some(layout) = pipe_message.args.get("layout") {
-                pwd_context.insert("layout".to_owned(), layout.clone());
-            }
-            if let Some(cwd) = pipe_message.args.get("cwd") {
-                pwd_context.insert("cwd".to_owned(), cwd.clone());
-            }
-            run_command(&["pwd"], pwd_context);
+            self.create_or_select_session(pipe_message.args);
         };
         should_render
     }
     fn render(&mut self, rows: usize, _cols: usize) {
-        if self.filtered_dirs.is_empty() {
-            hide_self();
-        } else {
-            show_self(true);
-            let prompt = "FILTER: ";
-            let text = Text::new(format!("{}{}", prompt, self.search_term))
-                .color_range(2, 0..prompt.len())
-                .color_range(3, prompt.len()..);
-            print_text(text);
-            let max_row = (self.selected_idx + self.scrolloff)
-                .min(self.filtered_dirs.len())
-                .max(rows - 1);
-            let min_row = max_row + 1 - rows;
-            for (i, dir) in self.filtered_dirs.iter().enumerate() {
-                if i.ge(&min_row) && i.lt(&max_row) {
-                    println!();
-                    let this_dir = Text::new(dir);
-                    if self.selected_idx == i {
-                        print_text(this_dir.selected());
-                    } else {
-                        print_text(this_dir);
-                    }
+        if self.available_dirs.is_empty() {
+            self.select_session();
+        }
+        let prompt = "FILTER: ";
+        let text = Text::new(format!("{}{}", prompt, self.search_term))
+            .color_range(2, 0..prompt.len())
+            .color_range(3, prompt.len()..);
+        print_text(text);
+        let max_row = (self.selected_idx + self.scrolloff)
+            .min(self.filtered_dirs.len())
+            .max(rows - 1);
+        let min_row = max_row + 1 - rows;
+        for (i, dir) in self.filtered_dirs.iter().enumerate() {
+            if i.ge(&min_row) && i.lt(&max_row) {
+                println!();
+                let this_dir = Text::new(dir);
+                if self.selected_idx == i {
+                    print_text(this_dir.selected());
+                } else {
+                    print_text(this_dir);
                 }
             }
         }
