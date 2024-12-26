@@ -38,7 +38,7 @@ impl State {
             Some(n) => n,
             None => cwd.file_name().unwrap().to_str().unwrap(),
         };
-        match (layout.map(|v| v.to_owned()), self.default_layout.clone()) {
+        match (layout.map(str::to_owned), self.default_layout.clone()) {
             (Some(l), Some(_)) | (Some(l), None) | (None, Some(l)) => switch_session_with_layout(
                 Some(name),
                 LayoutInfo::File(l.to_owned()),
