@@ -6,6 +6,19 @@ Trying to solve some stuff i don't like about zellij sessions.
 
 Just `cargo build --release` and copy the wasm where you keep your zellij plugins
 
+As of now there are two options to use this:
+
+1. call `zellij pipe` with a cwd args pointing to the dir you want to session into: useful when scripting for other tools (like yazi)
+2. call `zellij pipe` without args: this will run `fd` command on default dirs (home + .config as of now) and list the sessions.
+
+## Roadmap
+
+- [ ] CLEAN THE CODE
+- [ ] accept config for all the params
+- [ ] create github release with wasm
+- [ ] launch plugin without pipes (is it actually useful?)
+- [ ] better docs
+
 ## Problem statement
 
 I was struggling to create a nice workflow to switch/create zellij sessions, 
@@ -31,7 +44,7 @@ plugins {
 ```bash
 #! /usr/bin/env bash
 
-LAYOUT=simple
+LAYOUT=<YOUR_FAV_LAYOUT>
 
 if [ $# -eq 1 ]; then 
   CWD="$1"
@@ -62,3 +75,10 @@ prepend_keymap = [
 **Note:** the yazi command doesn't run when outside zellij, I do not know yazi enough to make it open zellij.
 
 Mostly running yazi inside of neovim with [ yazi.nvim ](https://github.com/mikavilpas/yazi.nvim)
+
+## Final notes
+
+When i started writing this I did not google enough, there are plugins like this one (written better):
+- [ zellij-sessionizer ](https://github.com/laperlej/zellij-sessionizer)
+- [ zj-smart-sessions ](https://github.com/dj95/zj-smart-sessions/tree/main)
+- [ zellij-switch ](https://github.com/mostafaqanbaryan/zellij-switch)
