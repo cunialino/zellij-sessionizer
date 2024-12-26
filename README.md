@@ -2,14 +2,52 @@
 
 Trying to solve some stuff i don't like about zellij sessions.
 
+### Problem
+
+I was struggling to create a nice workflow to switch/create zellij sessions, 
+I always needed to go through the session-manager default plugin, which is nice, 
+but it is a tool I need to open just for this.
+
+### Solution
+
+I created this small (probably buggy) plugin that allows me to have a workflow similar
+to [ThePrimeagen Tmux Sessionizer](https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer).
+
+Basically it allows to start a new session from within a session.
+
+## Configuration
+
+I haven't published a release yet, so for now we need to do the following: 
+
+- Build the wasm and put it in you plugins path:
+```bash
+git clone https://github.com/cunialino/zellij-sessionizer.git
+cd zellij-sessionizer
+cargo build --release
+cp target/wasm32-wasi/release/sessionizer.wasm <PATH_TO_YOUR_PLUGIN_FOLDER>
+```
+- Create a plugin alias for this plugin in the zellij kdl config:
+```kdl
+plugins {
+  sessionizer location="file:<PATH_TO_SESSIONIZER_WASM>" {
+    cwd "~/"
+  }
+}
+```
+
 ## Usage
 
-Just `cargo build --release` and copy the wasm where you keep your zellij plugins
-
 As of now there are two options to use this:
-
-1. call `zellij pipe` with a cwd args pointing to the dir you want to session into: useful when scripting for other tools (like yazi)
-2. call `zellij pipe` without args: this will run `fd` command on default dirs (home + .config as of now) and list the sessions.
+1. call `zellij pipe -p sessionizer -n sessionizer-new`, you can call this with or without args:
+    - without args: happens the same thing decsribe in point 2 
+    - with args: depends on the args described below
+        - cwd: If you pass the cwd arg, it will start a session in that cwd with your default layout and named as the dir. 
+        - name: Name of the session (optional, defaults to cwd last part)
+        - layout: name of the layout you want, defaults to default layout
+2. call `zellij action launch-or-focus-plugin sessionizer`:
+this will run the [fd](https://github.com/sharkdp/fd) in the `~/` and `~/.config` dirs,
+if you type in stuff you fuzzy-filter the directories, and you can navigate them with ctrl+n and ctrl+p (yes i use neovim btw),
+hitting enter will create a new session in that folder
 
 ## Roadmap
 
@@ -17,29 +55,12 @@ As of now there are two options to use this:
 - [ ] accept config for all the params
 - [ ] create github release with wasm
 - [ ] launch plugin without pipes (is it actually useful?)
-- [ ] better docs
+- [x] better docs
 
-## Problem statement
 
-I was struggling to create a nice workflow to switch/create zellij sessions, 
-I always needed to go through the session-manager default plugin, which is nice, 
-but it is a tool I need to open just for this.
+## Integration with [Yazi](https://github.com/sxyazi/yazi)
 
-## Solution 
-
-I created this small (probably buggy) plugin that allows me to have a workflow similar
-to [ThePrimeagen Tmux Sessionizer](https://github.com/ThePrimeagen/.dotfiles/blob/master/bin/.local/scripts/tmux-sessionizer).
-
-Basically it allows to start a new session from within a session.
-
-Now my workflow is as follows:
-- Create a plugin alias for this plugin in the zellij kdl config:
-```kdl
-plugins {
-  sessionizer location="file:<PATH_TO_SESSIONIZER_WASM>"
-}
-```
-**Note:** placeholder you define here (sessionizer) **MUST** be used in the -p arg `zellij pipe`.
+This can be used to start/switch sessions from yazi:
 - Define a script:
 ```bash
 #! /usr/bin/env bash
@@ -60,9 +81,9 @@ else
   zellij attach -c $SESSION_NAME options --default-cwd $CWD --default-layout $LAYOUT 
 fi
 ```
-You can modify this to your likings, I am actually always running in a zellij session (default shell of my terminal), so I always end up in the first branch.
 
-I bind this to a keymap in [yazi](https://github.com/sxyazi/yazi) to create a sesison into the hovered directory with the following keymap:
+- bind this to a keymap to create a sesison into the hovered directory with the following keymap:
+
 ```toml
 [manager]
 prepend_keymap = [
@@ -75,7 +96,6 @@ prepend_keymap = [
 
 ## Final notes
 
-When i started writing this I did not google enough, there are plugins like this one (written better):
-- [ zellij-sessionizer ](https://github.com/laperlej/zellij-sessionizer)
-- [ zj-smart-sessions ](https://github.com/dj95/zj-smart-sessions/tree/main)
-- [ zellij-switch ](https://github.com/mostafaqanbaryan/zellij-switch)
+When i started writing this I did not google enough, there are plugins like this one:
+- [ zellij-sessionizer ](https://github.com/laperlej/zellij-sessionizer): Implements that lists and find directories (better than me), does not allow to create sessions with pipes
+- [ zellij-switch ](https://github.com/mostafaqanbaryan/zellij-switch): Implements the switching part with pipes
