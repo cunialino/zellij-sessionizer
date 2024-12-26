@@ -48,6 +48,42 @@ impl State {
             (None, None) => switch_session_with_cwd(Some(name), Some(cwd.clone())),
         };
     }
+    fn parse_find_cmd(&mut self, std_out: std::vec::Vec<u8>) {
+        self.available_dirs = String::from_utf8(std_out)
+            .unwrap()
+            .split("\n")
+            .map(|e| e.to_string())
+            .collect();
+        self.filtered_dirs = self.available_dirs.clone();
+    }
+    fn select_session(&self) {
+        let mut cmd = self.find_cmd.clone();
+        cmd.append(
+            &mut self
+                .default_dirs
+                .clone()
+                .iter()
+                .map(|d| d.replace("~", self.home_dir.as_str()))
+                .collect(),
+        );
+        eprintln!("SESSIONIZER: cmd {:?}", cmd);
+        run_command(
+            &cmd.iter().map(String::as_str).collect::<Vec<_>>(),
+            BTreeMap::new(),
+        );
+    }
+
+    fn create_or_select_session(&self, context: BTreeMap<String, String>) {
+        if let Some(cwd) = context.get("cwd") {
+            self.create_session(
+                cwd,
+                context.get("name").map(String::as_str),
+                context.get("layout").map(String::as_str),
+            );
+        } else {
+            self.select_session();
+        }
+    }
 }
 
 register_plugin!(State);
