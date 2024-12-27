@@ -62,11 +62,17 @@ hitting enter will create a new session in that folder
 
 ## Roadmap
 
-- [ ] CLEAN THE CODE
+- [ ] CLEAN THE CODE from the following things:
+    - UNWRAPS, UNWRAPS everywhere
+    - probably better to create a mod for State struct, I don't like one massive file
 - [x] accept config for all the params
 - [ ] create github release with wasm
-- [ ] launch plugin without pipes (is it actually useful?)
+- [x] launch plugin without pipes (is it actually useful?)
 - [x] better docs
+- [ ] cache layouts-dir map, or find a smart way to keep track of which layouts should be used in which directory
+- [ ] better implementation for finding dirs: I would like to use [ignore crate](https://docs.rs/ignore/0.4.23/ignore/), 
+but i think i need [this commit](https://github.com/zellij-org/zellij/commit/0c21eae6646d511944a85121433b9443a96c73aa) to 
+achieve it in a smart way.
 
 
 ## Integration with [Yazi](https://github.com/sxyazi/yazi)
