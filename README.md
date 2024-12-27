@@ -31,9 +31,20 @@ cp target/wasm32-wasi/release/sessionizer.wasm <PATH_TO_YOUR_PLUGIN_FOLDER>
 plugins {
   sessionizer location="file:<PATH_TO_SESSIONIZER_WASM>" {
     cwd "~/"
+    // here you can put any additional config
   }
 }
 ```
+
+Available configurations are:
+- scrolloff: how much lines to look forward from current selection (like vim)
+- find_cmd: the command to list the directories you are interested in.
+By default it uses the [fd](https://github.com/sharkdp/fd) command.
+Write it in the form "cmd_name;arg1;arg2;..."
+- default_dirs: directories to look into, these are appended to the command, format "dir1;dir2;dir3"
+- default_layout: layout to use to open sessions, if not specified the default layout your zellij config will be used.
+
+**Note:** the default dirs, if relative paths, will be relatice the the cwd you set for your plugin.
 
 ## Usage
 
@@ -52,7 +63,7 @@ hitting enter will create a new session in that folder
 ## Roadmap
 
 - [ ] CLEAN THE CODE
-- [ ] accept config for all the params
+- [x] accept config for all the params
 - [ ] create github release with wasm
 - [ ] launch plugin without pipes (is it actually useful?)
 - [x] better docs

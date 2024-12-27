@@ -93,14 +93,25 @@ impl State {
 register_plugin!(State);
 
 impl ZellijPlugin for State {
-    fn load(&mut self, _configuration: BTreeMap<String, String>) {
-        self.scrolloff = 4;
-        self.default_dirs = vec![".".to_string(), ".config/".to_string()];
-        self.default_layout = Some("simple".to_owned());
-        self.find_cmd = vec!["fd", "-d", "1", "-t", "dir", "."]
-            .into_iter()
-            .map(|v| v.to_owned())
-            .collect();
+    fn load(&mut self, configuration: BTreeMap<String, String>) {
+        self.scrolloff = configuration
+            .get("scrolloff")
+            .map(|sc| sc.parse().unwrap_or(4))
+            .unwrap_or(4);
+        self.default_dirs = configuration
+            .get("default_dirs")
+            .map(|v| v.split(";").map(str::to_owned).collect())
+            .unwrap_or(vec![".".to_string(), ".config/".to_string()]);
+        self.default_layout = configuration.get("layout").map(String::to_owned);
+        self.find_cmd = configuration
+            .get("find_cmd")
+            .map(|v| v.split(";").map(str::to_owned).collect())
+            .unwrap_or(
+                vec!["fd", "-d", "1", "-t", "dir", "."]
+                    .into_iter()
+                    .map(|v| v.to_owned())
+                    .collect(),
+            );
         let subscriptions = [EventType::RunCommandResult, EventType::Key];
         let permissions = [
             PermissionType::ChangeApplicationState,
