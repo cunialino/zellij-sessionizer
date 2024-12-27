@@ -160,6 +160,7 @@ impl ZellijPlugin for State {
     fn pipe(&mut self, pipe_message: PipeMessage) -> bool {
         let should_render = false;
         if pipe_message.name.as_str() == "sessionizer-new" {
+            hide_self();
             self.create_or_select_session(pipe_message.args);
         };
         should_render
