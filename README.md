@@ -17,7 +17,7 @@ Basically it allows to start a new session from within a session.
 
 ## Configuration
 
-I haven't published a release yet, so for now we need to do the following: 
+I ~~haven't published a release yet, so for now~~, we need to do the following: 
 
 - Build the wasm and put it in you plugins path:
 ```bash
@@ -30,6 +30,17 @@ cp target/wasm32-wasi/release/sessionizer.wasm <PATH_TO_YOUR_PLUGIN_FOLDER>
 ```kdl
 plugins {
   sessionizer location="file:<PATH_TO_SESSIONIZER_WASM>" {
+    cwd "~/"
+    // here you can put any additional config
+  }
+}
+```
+
+While the above holds true, now you can also just configure it in the kdl:
+
+```kdl
+plugins {
+  sessionizer location="https://github.com/cunialino/zellij-sessionizer/releases/download/v0.1.0/sessionizer.wasm" {
     cwd "~/"
     // here you can put any additional config
   }
@@ -66,7 +77,7 @@ hitting enter will create a new session in that folder
     - UNWRAPS, UNWRAPS everywhere
     - probably better to create a mod for State struct, I don't like one massive file
 - [x] accept config for all the params
-- [ ] create github release with wasm
+- [x] create github release with wasm
 - [x] launch plugin without pipes (is it actually useful?)
 - [x] better docs
 - [ ] cache layouts-dir map, or find a smart way to keep track of which layouts should be used in which directory
