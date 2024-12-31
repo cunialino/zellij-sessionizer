@@ -5,7 +5,6 @@ use std::collections::BTreeMap;
 
 mod state;
 
-
 register_plugin!(State);
 
 impl ZellijPlugin for State {
@@ -47,6 +46,9 @@ impl ZellijPlugin for State {
                         should_render = true;
                     }
                 }
+                BareKey::Char('l') if key.has_modifiers(&[KeyModifier::Ctrl]) => {
+                    self.typing_layout = !self.typing_layout;
+                }
                 BareKey::Char('n') if key.has_modifiers(&[KeyModifier::Ctrl]) => {
                     if !self.filtered_dirs.is_empty()
                         && self.selected_idx < self.filtered_dirs.len() - 1
@@ -66,9 +68,13 @@ impl ZellijPlugin for State {
                     self.filter_dirs();
                 }
                 BareKey::Enter => {
-                    let cwd = self.filtered_dirs.get(self.selected_idx).unwrap();
-                    hide_self();
-                    self.create_session(cwd, None, None);
+                    if !self.typing_layout {
+                        let cwd = self.filtered_dirs.get(self.selected_idx).unwrap();
+                        hide_self();
+                        self.create_session(cwd, None, None);
+                    } else {
+                        todo!("Layout selection not implemented yet")
+                    }
                 }
                 _ => (),
             },
