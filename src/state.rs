@@ -17,6 +17,7 @@ pub(crate) struct State {
     pub(crate) default_dirs: Vec<String>,
     pub(crate) default_layout: Option<String>,
     pub(crate) find_cmd: Vec<String>,
+    pub(crate) typing_layout: bool,
 }
 
 impl State {
