@@ -33,6 +33,9 @@ impl State {
         self.selected_idx = 0;
     }
     pub(crate) fn create_session(&self, cwd: &str, name: Option<&str>, layout: Option<&str>) {
+        if cwd.is_empty() {
+            return;
+        }
         let cwd = PathBuf::from(cwd);
         let name = match name {
             Some(n) => n,
