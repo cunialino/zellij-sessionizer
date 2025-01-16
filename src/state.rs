@@ -59,7 +59,6 @@ impl State {
     pub(crate) fn select_session(&self) {
         let mut cmd = self.find_cmd.clone();
         cmd.append(&mut self.default_dirs.clone());
-        eprintln!("SESSIONIZER: cmd {:?}", cmd);
         run_command(
             &cmd.iter().map(String::as_str).collect::<Vec<_>>(),
             BTreeMap::new(),
