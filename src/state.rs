@@ -7,6 +7,10 @@ use zellij_tile::prelude::*;
 
 use std::{collections::BTreeMap, path::PathBuf};
 
+const DEFAULT_FIND_CMD: [&str; 6] = ["fd", "-d", "1", "-t", "dir", "."];
+const DEFAULT_FIND_DIRS: [&str; 2] = [".", ".config/"];
+const DEFAULT_SCROLL_OFF: u8 = 4;
+
 #[derive(Default)]
 pub(crate) struct State {
     pub(crate) available_dirs: Vec<String>,
@@ -20,6 +24,27 @@ pub(crate) struct State {
 }
 
 impl State {
+    pub(crate) fn new(configuration: BTreeMap<String, String>) -> Self {
+        let scrolloff = configuration
+            .get("scrolloff")
+            .map(|sc| sc.parse().unwrap_or(4))
+            .unwrap_or(4);
+        let default_dirs = configuration
+            .get("default_dirs")
+            .map(|v| v.split(";").map(str::to_owned).collect())
+            .unwrap_or(vec![".".to_string(), ".config/".to_string()]);
+        let default_layout = configuration.get("layout").map(String::to_owned);
+        let find_cmd = configuration
+            .get("find_cmd")
+            .map(|v| v.split(";").map(str::to_owned).collect())
+            .unwrap_or(
+                vec!["fd", "-d", "1", "-t", "dir", "."]
+                    .into_iter()
+                    .map(|v| v.to_owned())
+                    .collect(),
+            );
+
+    }
     pub(crate) fn filter_dirs(&mut self) {
         let pattern = Pattern::new(
             &self.search_term,
