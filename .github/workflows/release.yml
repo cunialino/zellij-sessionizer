@@ -1,0 +1,69 @@
+name: Release
+
+on:
+  push:
+    tags:
+      - "v*"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  CARGO_TERM_COLOR: always
+  PLUGIN_NAME: sessionizer
+  WASM_TARGET: wasm32-wasip1
+
+jobs:
+  build:
+    name: Build wasm plugin
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      # .cargo/config.toml pins `build.target = wasm32-wasip1`, so a plain
+      # `cargo build --release` produces the plugin and nothing else.
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ env.WASM_TARGET }}
+
+      - uses: Swatinem/rust-cache@v2
+        with:
+          key: ${{ env.WASM_TARGET }}
+
+      - name: Build
+        run: cargo build --release
+
+      - name: Sanity check artifact
+        run: |
+          wasm="target/${WASM_TARGET}/release/${PLUGIN_NAME}.wasm"
+          test -f "$wasm" || { echo "::error::missing $wasm"; exit 1; }
+          du -h "$wasm"
+          sha256sum "$wasm" | sed "s#target/${WASM_TARGET}/release/##" | tee "target/${WASM_TARGET}/release/${PLUGIN_NAME}.wasm.sha256"
+
+      - name: Create GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          files: |
+            target/${{ env.WASM_TARGET }}/release/${{ env.PLUGIN_NAME }}.wasm
+            target/${{ env.WASM_TARGET }}/release/${{ env.PLUGIN_NAME }}.wasm.sha256
+          generate_release_notes: true
+          prerelease: ${{ contains(github.ref_name, '-') }}
+          make_latest: "true"
+
+  # Optional Nix parity job: same toolchain as the local devshell (rust-bin beta +
+  # wasm32-wasip1). Enable if you want CI to match `nix develop` exactly; add a
+  # Cachix cache or the toolchain build dominates the runtime.
+  #
+  # nix:
+  #   name: Build via flake
+  #   runs-on: ubuntu-latest
+  #   steps:
+  #     - uses: actions/checkout@v4
+  #     - uses: DeterminateSystems/nix-installer-action@v16
+  #     - uses: DeterminateSystems/magic-nix-cache-action@v9
+  #     - run: nix develop -c cargo build --release
