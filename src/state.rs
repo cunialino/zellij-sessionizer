@@ -44,7 +44,9 @@ impl State {
         match (layout.map(str::to_owned), self.default_layout.clone()) {
             (Some(l), Some(_)) | (Some(l), None) | (None, Some(l)) => switch_session_with_layout(
                 Some(name),
-                LayoutInfo::File(l.to_owned()),
+                // 0.45 added LayoutMetadata as a 2nd field; the host re-reads the layout file from
+                // the layouts dir by name and ignores this, and a wasm plugin cannot read the host fs.
+                LayoutInfo::File(l.to_owned(), LayoutMetadata::default()),
                 Some(cwd.clone()),
             ),
 
